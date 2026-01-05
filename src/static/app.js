@@ -472,6 +472,56 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Function to create share buttons for an activity
+  function createShareButtons(activityName, details) {
+    const formattedSchedule = formatSchedule(details);
+    const shareText = `Check out ${activityName} at Mergington High School! ${details.description} Schedule: ${formattedSchedule}`;
+    const shareUrl = window.location.href;
+    
+    return `
+      <div class="share-buttons">
+        <span class="share-label">Share:</span>
+        <button class="share-button facebook" data-platform="facebook" data-activity="${activityName}" title="Share on Facebook">f</button>
+        <button class="share-button twitter" data-platform="twitter" data-activity="${activityName}" title="Share on Twitter">𝕏</button>
+        <button class="share-button linkedin" data-platform="linkedin" data-activity="${activityName}" title="Share on LinkedIn">in</button>
+        <button class="share-button email" data-platform="email" data-activity="${activityName}" title="Share via Email">✉</button>
+        <button class="share-button copy-link" data-platform="copy" data-activity="${activityName}" title="Copy link">🔗</button>
+      </div>
+    `;
+  }
+
+  // Function to handle share button clicks
+  function handleShare(platform, activityName, details) {
+    const formattedSchedule = formatSchedule(details);
+    const shareText = `Check out ${activityName} at Mergington High School! ${details.description} Schedule: ${formattedSchedule}`;
+    const shareUrl = window.location.href;
+    
+    switch(platform) {
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`, '_blank', 'width=600,height=400');
+        break;
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank', 'width=600,height=400');
+        break;
+      case 'linkedin':
+        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank', 'width=600,height=400');
+        break;
+      case 'email':
+        window.location.href = `mailto:?subject=${encodeURIComponent(`Activity: ${activityName}`)}&body=${encodeURIComponent(shareText + '\n\n' + shareUrl)}`;
+        break;
+      case 'copy':
+        // Copy link to clipboard
+        const textToCopy = `${shareText}\n${shareUrl}`;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          showMessage('Link copied to clipboard!', 'success');
+        }).catch(err => {
+          console.error('Failed to copy:', err);
+          showMessage('Failed to copy link', 'error');
+        });
+        break;
+    }
+  }
+
   // Function to render a single activity card
   function renderActivityCard(name, details) {
     const activityCard = document.createElement("div");
@@ -552,6 +602,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .join("")}
         </ul>
       </div>
+      ${createShareButtons(name, details)}
       <div class="activity-card-actions">
         ${
           currentUser
@@ -575,6 +626,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const deleteButtons = activityCard.querySelectorAll(".delete-participant");
     deleteButtons.forEach((button) => {
       button.addEventListener("click", handleUnregister);
+    });
+
+    // Add click handlers for share buttons
+    const shareButtons = activityCard.querySelectorAll(".share-button");
+    shareButtons.forEach((button) => {
+      button.addEventListener("click", (e) => {
+        const platform = e.currentTarget.dataset.platform;
+        handleShare(platform, name, details);
+      });
     });
 
     // Add click handler for register button (only when authenticated)

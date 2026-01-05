@@ -472,12 +472,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Function to create share buttons for an activity
-  function createShareButtons(activityName, details) {
+  // Helper function to generate share text and URL
+  function getShareData(activityName, details) {
     const formattedSchedule = formatSchedule(details);
     const shareText = `Check out ${activityName} at Mergington High School! ${details.description} Schedule: ${formattedSchedule}`;
     const shareUrl = window.location.href;
-    
+    return { shareText, shareUrl };
+  }
+
+  // Function to create share buttons for an activity
+  function createShareButtons(activityName, details) {
     return `
       <div class="share-buttons">
         <span class="share-label">Share:</span>
@@ -492,9 +496,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Function to handle share button clicks
   function handleShare(platform, activityName, details) {
-    const formattedSchedule = formatSchedule(details);
-    const shareText = `Check out ${activityName} at Mergington High School! ${details.description} Schedule: ${formattedSchedule}`;
-    const shareUrl = window.location.href;
+    const { shareText, shareUrl } = getShareData(activityName, details);
     
     switch(platform) {
       case 'facebook':
@@ -512,12 +514,37 @@ document.addEventListener("DOMContentLoaded", () => {
       case 'copy':
         // Copy link to clipboard
         const textToCopy = `${shareText}\n${shareUrl}`;
-        navigator.clipboard.writeText(textToCopy).then(() => {
-          showMessage('Link copied to clipboard!', 'success');
-        }).catch(err => {
-          console.error('Failed to copy:', err);
-          showMessage('Failed to copy link', 'error');
-        });
+        
+        // Try modern clipboard API first
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(textToCopy).then(() => {
+            showMessage('Link copied to clipboard!', 'success');
+          }).catch(err => {
+            console.error('Failed to copy:', err);
+            showMessage('Failed to copy link', 'error');
+          });
+        } else {
+          // Fallback for older browsers
+          try {
+            const textarea = document.createElement('textarea');
+            textarea.value = textToCopy;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            const successful = document.execCommand('copy');
+            document.body.removeChild(textarea);
+            
+            if (successful) {
+              showMessage('Link copied to clipboard!', 'success');
+            } else {
+              showMessage('Failed to copy link', 'error');
+            }
+          } catch (err) {
+            console.error('Failed to copy:', err);
+            showMessage('Failed to copy link', 'error');
+          }
+        }
         break;
     }
   }

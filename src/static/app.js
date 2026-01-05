@@ -472,6 +472,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Helper function to escape HTML
+  function escapeHtml(unsafe) {
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
   // Helper function to generate share text and URL
   function getShareData(activityName, details) {
     const formattedSchedule = formatSchedule(details);
@@ -482,14 +492,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Function to create share buttons for an activity
   function createShareButtons(activityName, details) {
+    const escapedActivityName = escapeHtml(activityName);
     return `
       <div class="share-buttons">
         <span class="share-label">Share:</span>
-        <button class="share-button facebook" data-platform="facebook" data-activity="${activityName}" title="Share on Facebook">f</button>
-        <button class="share-button twitter" data-platform="twitter" data-activity="${activityName}" title="Share on Twitter">𝕏</button>
-        <button class="share-button linkedin" data-platform="linkedin" data-activity="${activityName}" title="Share on LinkedIn">in</button>
-        <button class="share-button email" data-platform="email" data-activity="${activityName}" title="Share via Email">✉</button>
-        <button class="share-button copy-link" data-platform="copy" data-activity="${activityName}" title="Copy link">🔗</button>
+        <button class="share-button facebook" data-platform="facebook" data-activity="${escapedActivityName}" title="Share on Facebook" aria-label="Share ${escapedActivityName} on Facebook">f</button>
+        <button class="share-button twitter" data-platform="twitter" data-activity="${escapedActivityName}" title="Share on Twitter" aria-label="Share ${escapedActivityName} on Twitter">𝕏</button>
+        <button class="share-button linkedin" data-platform="linkedin" data-activity="${escapedActivityName}" title="Share on LinkedIn" aria-label="Share ${escapedActivityName} on LinkedIn">in</button>
+        <button class="share-button email" data-platform="email" data-activity="${escapedActivityName}" title="Share via Email" aria-label="Share ${escapedActivityName} via Email">✉</button>
+        <button class="share-button copy-link" data-platform="copy" data-activity="${escapedActivityName}" title="Copy link" aria-label="Copy ${escapedActivityName} link to clipboard">🔗</button>
       </div>
     `;
   }
